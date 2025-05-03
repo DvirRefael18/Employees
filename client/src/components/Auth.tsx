@@ -15,7 +15,6 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
-    // Clear registration success when changing tabs
     if (newValue === 0) {
       setRegistrationSuccess(false);
     }
@@ -24,24 +23,22 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   const handleLoginSuccess = (token: string) => {
     setIsLoading(true);
     
-    // Show loading screen for at least 3 seconds
     setTimeout(() => {
       onAuthSuccess(token);
-    }, 3000);
+    }, 2000);
   };
 
   const handleRegisterSuccess = (token: string) => {
-    setIsLoading(true);
-    
-    // Show loading screen for at least 3 seconds
-    setTimeout(() => {
-      onAuthSuccess(token);
-    }, 3000);
-  };
-
-  const handleRegisterComplete = () => {
-    setRegistrationSuccess(true);
-    setActiveTab(0); // Switch back to login tab
+    if (token) {
+      setIsLoading(true);
+      
+      setTimeout(() => {
+        onAuthSuccess(token);
+      }, 2000);
+    } else {
+      setRegistrationSuccess(true);
+      setActiveTab(0);
+    }
   };
 
   if (isLoading) {
@@ -75,7 +72,6 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           ) : (
             <Register 
               onRegisterSuccess={handleRegisterSuccess} 
-              onRegisterComplete={handleRegisterComplete}
             />
           )}
         </Box>

@@ -39,6 +39,7 @@ interface EmployeeDashboardProps {
     managerId?: number;
     managerName?: string;
     role?: string;
+    isPrototype?: boolean;
   } | null;
 }
 
@@ -51,13 +52,11 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
   const [clockStatusLoading, setClockStatusLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null);
   
-  // New state for the dialog
   const [dialogOpen, setDialogOpen] = useState(false);
   const [dialogAction, setDialogAction] = useState<'clockIn' | 'clockOut'>('clockIn');
   const [reportText, setReportText] = useState('');
 
   useEffect(() => {
-    // If user is null, don't try to fetch data
     if (!user) {
       setLoading(false);
       return;
@@ -70,25 +69,22 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
           lastName: user.lastName || '',
           email: user.email,
           role: user.role || '',
-          manager: user.managerName || ''
+          manager: user.managerName || '',
+          isPrototype: user.isPrototype || false
         });
 
-        // Try to get clock status, but don't fail if this doesn't work
         try {
           await checkClockStatus();
         } catch (clockErr) {
           console.error('Error checking clock status:', clockErr);
-          // Just log the error, don't fail the entire dashboard
         }
 
-        // If user is a manager, fetch employee time records
         if (user.isManager) {
           try {
             const records = await getEmployeeTimeRecords();
             setTimeRecords(records);
           } catch (recordsErr) {
             console.error('Error fetching time records:', recordsErr);
-            // This shouldn't fail the entire dashboard either
           }
         }
 
@@ -176,7 +172,6 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
       setActionLoading(recordId);
       await rejectTimeRecord(recordId);
       
-      // Update the status in the local state
       setTimeRecords(prevRecords =>
         prevRecords.map(record =>
           record.id === recordId ? { ...record, status: 'rejected' } : record
@@ -207,7 +202,6 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
     );
   }
 
-  // If user is null after loading, show a message
   if (!user) {
     return (
       <Alert severity="info" sx={{ mt: 2 }}>
@@ -236,14 +230,14 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
             <Typography variant="subtitle1">Role:</Typography>
             <Typography variant="body1">{employee?.role}</Typography>
           </Box>
-          <Box sx={{ width: '50%', mb: 2 }}>
-            <Typography variant="subtitle1">Manager:</Typography>
+          {!employee?.isPrototype && (<Box sx={{ width: '50%', mb: 2 }}>
+            <Typography variant="subtitle1" color="text.secondary">Manager:</Typography>
             <Typography variant="body1">{employee?.manager}</Typography>
-          </Box>
+          </Box>)}
         </Box>
       </Paper>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}>
+      {!(employee?.isPrototype) && (<Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}>
         <Button
           variant="contained"
           color="primary"
@@ -262,9 +256,8 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
         >
           {clockStatusLoading ? 'Processing...' : 'Clock Out'}
         </Button>
-      </Box>
+      </Box>)}
 
-      {/* Clock In/Out Dialog */}
       <Dialog open={dialogOpen} onClose={handleDialogClose}>
         <DialogTitle>
           {dialogAction === 'clockIn' ? 'Clock In Report' : 'Clock Out Report'}
@@ -355,9 +348,15 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
         </>
       )}
 
-      {user.isManager && timeRecords.length === 0 && (
+      {!employee?.isPrototype && user.isManager && timeRecords.length === 0 && (
         <Alert severity="info" sx={{ mt: 4 }}>
           No time records found for your employees.
+        </Alert>
+      )}
+
+      {employee?.isPrototype && (
+        <Alert severity="info" sx={{ mt: 4 }}>
+          This is a prototype and does not have any time records.
         </Alert>
       )}
     </Box>

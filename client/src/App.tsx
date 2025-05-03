@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Route, Routes, Navigate, Link as RouterLink } from 'react-router-dom';
 import './App.css';
 import EmployeeDashboard from './components/EmployeeDashboard';
-import Auth from './components/Auth';
+import Login from './components/Login';
+import Register from './components/Register';
 import PrivateRoute from './components/PrivateRoute';
 import { loadUserFromToken, setAuthToken, getCurrentUser, logout } from './services/authService';
 import { UserAuth } from './types/Auth';
@@ -19,7 +20,6 @@ import {
   CircularProgress
 } from '@mui/material';
 
-// Create a theme
 const theme = createTheme({
   palette: {
     primary: {
@@ -35,6 +35,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<UserAuth | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [logoutRedirect, setLogoutRedirect] = useState<boolean>(false);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -70,7 +71,14 @@ function App() {
     logout();
     setIsAuthenticated(false);
     setUser(null);
+    setLogoutRedirect(true);
   };
+
+  useEffect(() => {
+    if (logoutRedirect) {
+      setLogoutRedirect(false);
+    }
+  }, [logoutRedirect]);
 
   if (loading) {
     return (
@@ -86,6 +94,17 @@ function App() {
         >
           <CircularProgress />
         </Box>
+      </ThemeProvider>
+    );
+  }
+
+  if (logoutRedirect) {
+    return (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <BrowserRouter>
+          <Navigate to="/login" replace />
+        </BrowserRouter>
       </ThemeProvider>
     );
   }
@@ -115,18 +134,47 @@ function App() {
                   </Button>
                 </>
               )}
+              {!isAuthenticated && (
+                <>
+                  <Button 
+                    color="inherit" 
+                    component={RouterLink} 
+                    to="/login"
+                    sx={{ mr: 2 }}
+                  >
+                    Login
+                  </Button>
+                  <Button 
+                    color="inherit" 
+                    component={RouterLink} 
+                    to="/register"
+                  >
+                    Register
+                  </Button>
+                </>
+              )}
             </Toolbar>
           </AppBar>
           
           <Container sx={{ mt: 4 }}>
             <Routes>
               <Route 
-                path="/auth" 
+                path="/login" 
                 element={
                   isAuthenticated ? (
                     <Navigate to="/dashboard" replace />
                   ) : (
-                    <Auth onAuthSuccess={handleAuthSuccess} />
+                    <Login onLoginSuccess={handleAuthSuccess} />
+                  )
+                } 
+              />
+              <Route 
+                path="/register" 
+                element={
+                  isAuthenticated ? (
+                    <Navigate to="/dashboard" replace />
+                  ) : (
+                    <Register onRegisterSuccess={handleAuthSuccess} />
                   )
                 } 
               />
@@ -144,10 +192,11 @@ function App() {
                   isAuthenticated ? (
                     <Navigate to="/dashboard" replace />
                   ) : (
-                    <Navigate to="/auth" replace />
+                    <Navigate to="/login" replace />
                   )
                 } 
               />
+              <Route path="*" element={<Navigate to="/login" replace />} />
             </Routes>
           </Container>
         </Box>

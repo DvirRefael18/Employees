@@ -30,14 +30,11 @@ export const logout = (): void => {
   setAuthToken(null);
 };
 
-// Get current user
 export const getCurrentUser = async (): Promise<UserAuth> => {
   const response = await axios.get(`${API_URL}/me`);
-  console.log('Current user response:', response.data);
   return response.data;
 };
 
-// Set auth token in axios headers
 export const setAuthToken = (token: string | null): void => {
   if (token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -46,20 +43,15 @@ export const setAuthToken = (token: string | null): void => {
   }
 };
 
-// Load user from token on app start
 export const loadUserFromToken = (): { token: string; isValid: boolean } | null => {
   const token = localStorage.getItem('token');
-  
   if (!token) {
     return null;
   }
   
-  // Set token in axios headers
   setAuthToken(token);
   
-  // Check if token is expired
   try {
-    // This is a simple check - you might want to decode and check expiry
     return { token, isValid: true };
   } catch (error) {
     localStorage.removeItem('token');

@@ -2,29 +2,24 @@ import { Request, Response } from 'express';
 import { TimeRecord } from '../models/TimeRecord';
 import { User } from '../models/User';
 
-// In-memory time records storage
 let timeRecords: TimeRecord[] = [];
 
-// Helper to get current date in YYYY-MM-DD format
 const getCurrentDate = (): string => {
   return new Date().toISOString().split('T')[0];
 };
 
-// Helper to get current time in HH:MM format
 const getCurrentTime = (): string => {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 };
 
-// Clock in
 export const clockIn = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore - Auth middleware adds user to request
+    // @ts-ignore
     const userId = req.user.id;
     const { notes } = req.body;
     
-    // Get user and their manager
-    // @ts-ignore - Access the users array from the imported auth controller
+    // @ts-ignore
     const users: User[] = req.app.locals.users || [];
     const user = users.find(u => u.id === userId);
     
@@ -36,7 +31,6 @@ export const clockIn = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User does not have a manager assigned' });
     }
     
-    // Check if user is already clocked in
     const activeRecord = timeRecords.find(
       record => record.userId === userId && !record.endTime
     );
@@ -45,7 +39,6 @@ export const clockIn = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User is already clocked in' });
     }
     
-    // Create new time record
     const newRecord: TimeRecord = {
       id: timeRecords.length > 0 ? Math.max(...timeRecords.map(r => r.id)) + 1 : 1,
       userId,
@@ -67,14 +60,12 @@ export const clockIn = async (req: Request, res: Response) => {
   }
 };
 
-// Clock out
 export const clockOut = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore - Auth middleware adds user to request
+    // @ts-ignore
     const userId = req.user.id;
     const { notes } = req.body;
     
-    // Find active time record
     const activeRecordIndex = timeRecords.findIndex(
       record => record.userId === userId && !record.endTime
     );
@@ -83,7 +74,6 @@ export const clockOut = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'User is not clocked in' });
     }
     
-    // Update record with end time
     const updatedRecord = {
       ...timeRecords[activeRecordIndex],
       endTime: getCurrentTime(),
@@ -100,10 +90,9 @@ export const clockOut = async (req: Request, res: Response) => {
   }
 };
 
-// Get time records for a user
 export const getUserTimeRecords = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore - Auth middleware adds user to request
+    // @ts-ignore
     const userId = req.user.id;
     
     const userRecords = timeRecords.filter(record => record.userId === userId);
@@ -115,19 +104,16 @@ export const getUserTimeRecords = async (req: Request, res: Response) => {
   }
 };
 
-// Get time records for employees under a manager
 export const getEmployeeTimeRecords = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore - Auth middleware adds user to request
+    // @ts-ignore
     const managerId = req.user.id;
     
-    // Get all records where the manager is the current user
     const managerRecords = timeRecords.filter(record => record.managerId === managerId);
     
-    // @ts-ignore - Access the users array from the imported auth controller
+    // @ts-ignore
     const users: User[] = req.app.locals.users || [];
     
-    // Enrich records with employee information
     const enrichedRecords = managerRecords.map(record => {
       const employee = users.find(u => u.id === record.userId);
       return {
@@ -144,7 +130,6 @@ export const getEmployeeTimeRecords = async (req: Request, res: Response) => {
   }
 };
 
-// Approve time record
 export const approveTimeRecord = async (req: Request, res: Response) => {
   try {
     const recordId = parseInt(req.params.id);
@@ -167,7 +152,6 @@ export const approveTimeRecord = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Cannot approve an active time record' });
     }
     
-    // Update record status
     const updatedRecord = {
       ...record,
       status: 'approved' as const,
@@ -183,7 +167,6 @@ export const approveTimeRecord = async (req: Request, res: Response) => {
   }
 };
 
-// Reject time record
 export const rejectTimeRecord = async (req: Request, res: Response) => {
   try {
     const recordId = parseInt(req.params.id);
@@ -207,7 +190,6 @@ export const rejectTimeRecord = async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'Cannot reject an active time record' });
     }
     
-    // Update record status
     const updatedRecord = {
       ...record,
       status: 'rejected' as const,
@@ -224,7 +206,6 @@ export const rejectTimeRecord = async (req: Request, res: Response) => {
   }
 };
 
-// Check if user is currently clocked in
 export const checkClockStatus = async (req: Request, res: Response) => {
   try {
     // @ts-ignore - Auth middleware adds user to request

@@ -8,5 +8,6 @@ export interface User {
   managerId?: number; 
   managerName?: string;
   role?: string;
+  isPrototype?: boolean;
   createdAt: Date;
 } 

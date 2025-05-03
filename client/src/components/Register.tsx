@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { register } from '../services/authService';
 import { getManagers } from '../services/managerService';
 import { RegisterFormData, Manager } from '../types/Auth';
+import LoadingScreen from './LoadingScreen';
 import { 
   TextField, 
   Button, 
   Typography, 
   Box, 
-  Container,
   Paper,
   Alert,
   Checkbox,
@@ -18,15 +19,25 @@ import {
   FormControl,
   FormHelperText,
   CircularProgress,
-  SelectChangeEvent
+  SelectChangeEvent,
+  Divider,
+  useTheme,
+  useMediaQuery,
+  Avatar,
+  Snackbar
 } from '@mui/material';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 interface RegisterProps {
   onRegisterSuccess: (token: string) => void;
-  onRegisterComplete: () => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onRegisterComplete }) => {
+const Register: React.FC<RegisterProps> = () => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
+  
   const [formData, setFormData] = useState<RegisterFormData>({
     email: '',
     password: '',
@@ -38,14 +49,16 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onRegisterComple
   });
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<boolean>(false);
   const [managers, setManagers] = useState<Manager[]>([]);
   const [loadingManagers, setLoadingManagers] = useState<boolean>(true);
+  const [showLoadingScreen, setShowLoadingScreen] = useState<boolean>(false);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchManagers = async () => {
       try {
         const data = await getManagers();
-        console.log('Managers data:', data);
         setManagers(data);
         setLoadingManagers(false);
       } catch (err) {
@@ -83,7 +96,6 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onRegisterComple
     setError(null);
 
     try {
-      // Validate form
       if (!formData.email || !formData.password) {
         throw new Error('Please fill in all required fields');
       }
@@ -92,148 +104,315 @@ const Register: React.FC<RegisterProps> = ({ onRegisterSuccess, onRegisterComple
         throw new Error('Please select a manager');
       }
 
-      // Register user but don't log them in
       await register(formData);
       
-      // Show success message and redirect to login
-      setError(null);
-      onRegisterComplete(); // Call this to redirect to login page
+      setSuccess(true);
+      setIsLoading(false);
+      setShowSuccessSnackbar(true);
+      setShowLoadingScreen(true)
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Something went wrong');
-    } finally {
       setIsLoading(false);
     }
   };
 
+  if (showLoadingScreen) {
+    return <LoadingScreen message="Preparing your account..." />;
+  }
+
   return (
-    <Container component="div" maxWidth="xs">
-      <Paper
-        elevation={3}
-        sx={{
-          padding: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          mt: 2
-        }}
+    <Box sx={{ 
+      display: 'flex', 
+      flexDirection: isMobile ? 'column' : 'row',
+      height: '80vh',
+      maxWidth: '1200px',
+      mx: 'auto'
+    }}>
+      <Snackbar
+        open={showSuccessSnackbar}
+        autoHideDuration={2000}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        sx={{ top: 16 }}
       >
-        <Typography component="h1" variant="h5">
-          Register
-        </Typography>
-        
-        {error && (
-          <Alert severity="error" sx={{ width: '100%', mt: 2 }}>
-            {error}
-          </Alert>
-        )}
-        
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3, width: '100%' }}>
-          <TextField
-            margin="normal"
-            fullWidth
-            id="firstName"
-            label="First Name"
-            name="firstName"
-            autoComplete="given-name"
-            autoFocus
-            value={formData.firstName}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            id="lastName"
-            label="Last Name"
-            name="lastName"
-            autoComplete="family-name"
-            value={formData.lastName}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="email"
-            label="Email Address"
-            name="email"
-            autoComplete="email"
-            value={formData.email}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type="password"
-            id="password"
-            autoComplete="new-password"
-            value={formData.password}
-            onChange={handleChange}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="role"
-            label="Role"
-            autoComplete="role"
-            value={formData.role}
-            onChange={handleChange}
-          />
-          <FormControl fullWidth margin="normal" required>
-            <InputLabel id="manager-select-label">Manager</InputLabel>
-            {loadingManagers ? (
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                <CircularProgress size={24} sx={{ mr: 1 }} />
-                <Typography variant="body2">Loading managers...</Typography>
-              </Box>
-            ) : (
-              <>
-                <Select
-                  labelId="manager-select-label"
-                  id="managerId"
-                  name="managerId"
-                  value={formData.managerId ? formData.managerId.toString() : ''}
-                  label="Manager"
-                  onChange={handleSelectChange}
-                >
-                  {managers.map(manager => (
-                    <MenuItem key={manager.id} value={manager.id.toString()}>
-                      {manager.name} ({manager.email})
-                    </MenuItem>
-                  ))}
-                </Select>
-                <FormHelperText>Select your manager</FormHelperText>
-              </>
-            )}
-          </FormControl>
-          
-          <FormControlLabel
-            control={
-              <Checkbox
-                name="isManager"
-                checked={formData.isManager}
-                onChange={handleChange}
-                color="primary"
-              />
+        <Alert 
+          severity="success" 
+          variant="filled"
+          icon={<CheckCircleOutlineIcon fontSize="inherit" />}
+          sx={{ 
+            width: '100%', 
+            boxShadow: 3,
+            fontSize: '1rem',
+            alignItems: 'center',
+            '& .MuiAlert-icon': {
+              fontSize: '1.5rem'
             }
-            label="Is Manager"
-            sx={{ mt: 1 }}
-          />
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            disabled={isLoading || loadingManagers}
+          }}
+        >
+          Sign-up successfully completed!
+        </Alert>
+      </Snackbar>
+
+      {!isMobile && (
+        <Box 
+          sx={{
+            flex: '0 0 60%',
+            backgroundImage: 'url(https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260)',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            borderRadius: 2,
+            boxShadow: 3,
+            position: 'relative',
+            height: '100%',
+            mr: 2,
+            '&::before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
+              borderRadius: 2,
+            }
+          }}
+        >
+          <Box
+            sx={{
+              position: 'relative',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              color: 'white',
+              padding: 4,
+              zIndex: 1
+            }}
           >
-            {isLoading ? 'Loading...' : 'Register'}
-          </Button>
+            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+              Join Our Team
+            </Typography>
+            <Typography variant="h6" sx={{ maxWidth: '80%', textAlign: 'center' }}>
+              Create your account to access employee management features
+            </Typography>
+            <Box
+              sx={{
+                mt: 3,
+                p: 3,
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: 2,
+                maxWidth: '80%',
+              }}
+            >
+              <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
+                "Our employee management system helps teams stay organized and productive."
+              </Typography>
+              <Typography variant="body2" sx={{ mt: 1, textAlign: 'right' }}>
+                — Team Lead
+              </Typography>
+            </Box>
+          </Box>
         </Box>
-      </Paper>
-    </Container>
+      )}
+
+      {/* Right side - Register form */}
+      <Box sx={{ flex: isMobile ? '1' : '0 0 40%', overflowY: 'auto' }}>
+        <Paper 
+          elevation={6} 
+          square 
+          sx={{ 
+            borderRadius: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            p: { xs: 2, sm: 4 },
+            minHeight: '100%'
+          }}
+        >
+          <Box
+            sx={{
+              my: 2,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              width: '100%',
+              maxWidth: 400
+            }}
+          >
+            <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
+              <PersonAddIcon />
+            </Avatar>
+            
+            <Typography component="h1" variant="h5" sx={{ mb: 1 }}>
+              Create an Account
+            </Typography>
+            
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Fill in your details to register
+            </Typography>
+            
+            {error && (
+              <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
+                {error}
+              </Alert>
+            )}
+
+            {success && (
+              <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
+                Registration successful! Redirecting to login page...
+              </Alert>
+            )}
+            
+            <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+              <TextField
+                margin="normal"
+                fullWidth
+                id="firstName"
+                label="First Name"
+                name="firstName"
+                autoComplete="given-name"
+                autoFocus
+                value={formData.firstName}
+                onChange={handleChange}
+                variant="outlined"
+              />
+              <TextField
+                margin="normal"
+                fullWidth
+                id="lastName"
+                label="Last Name"
+                name="lastName"
+                autoComplete="family-name"
+                value={formData.lastName}
+                onChange={handleChange}
+                variant="outlined"
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                id="email"
+                label="Email Address"
+                name="email"
+                autoComplete="email"
+                value={formData.email}
+                onChange={handleChange}
+                variant="outlined"
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="password"
+                label="Password"
+                type="password"
+                id="password"
+                autoComplete="new-password"
+                value={formData.password}
+                onChange={handleChange}
+                variant="outlined"
+              />
+              <TextField
+                margin="normal"
+                required
+                fullWidth
+                name="role"
+                label="Role"
+                autoComplete="role"
+                value={formData.role}
+                onChange={handleChange}
+                variant="outlined"
+              />
+              <FormControl fullWidth margin="normal" required variant="outlined">
+                <InputLabel id="manager-select-label">Manager</InputLabel>
+                {loadingManagers ? (
+                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+                    <CircularProgress size={24} sx={{ mr: 1 }} />
+                    <Typography variant="body2">Loading managers...</Typography>
+                  </Box>
+                ) : (
+                  <>
+                    <Select
+                      labelId="manager-select-label"
+                      id="managerId"
+                      name="managerId"
+                      value={formData.managerId ? formData.managerId.toString() : ''}
+                      label="Manager"
+                      onChange={handleSelectChange}
+                    >
+                      {managers.map(manager => (
+                        <MenuItem key={manager.id} value={manager.id.toString()}>
+                          {manager.name} ({manager.email})
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    <FormHelperText>Select your manager</FormHelperText>
+                  </>
+                )}
+              </FormControl>
+              
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="isManager"
+                    checked={formData.isManager}
+                    onChange={handleChange}
+                    color="primary"
+                  />
+                }
+                label="Is Manager"
+                sx={{ mt: 1 }}
+              />
+              <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                color="primary"
+                sx={{ 
+                  mt: 3, 
+                  mb: 2,
+                  py: 1.2,
+                  fontWeight: 'bold',
+                  fontSize: '1rem'
+                }}
+                disabled={isLoading || loadingManagers || success}
+              >
+                {isLoading ? 'Registering...' : 'Register'}
+              </Button>
+
+              <Box mt={3} mb={2}>
+                <Divider>
+                  <Typography variant="body2" color="text.secondary">
+                    Already registered?
+                  </Typography>
+                </Divider>
+              </Box>
+              
+              <Box display="flex" justifyContent="center">
+                <Button
+                  component={RouterLink}
+                  to="/login"
+                  variant="outlined"
+                  fullWidth
+                  sx={{ py: 1 }}
+                >
+                  Sign In
+                </Button>
+              </Box>
+            </Box>
+          </Box>
+          
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
+            © {new Date().getFullYear()} Employee Management System
+          </Typography>
+        </Paper>
+      </Box>
+    </Box>
   );
 };
 

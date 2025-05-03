@@ -1,9 +1,8 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 import { User } from '../models/User';
 
-// In-memory user storage - export it so other controllers can access it
 export let users: User[] = [];
 
 const initRootUser = async () => {
@@ -19,7 +18,8 @@ const initRootUser = async () => {
       lastName: 'admin',
       isManager: true,
       role: 'prototype admin',
-      createdAt: new Date()
+      createdAt: new Date(),
+      isPrototype: true
     };
 
     users.push(rootUser);
@@ -29,8 +29,8 @@ const initRootUser = async () => {
 
 initRootUser();
 
-// JWT secret (should be in environment variables in production)
-const JWT_SECRET = 'your_jwt_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
+const JWT_EXPIRY = process.env.JWT_EXPIRY || '1d';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -75,7 +75,7 @@ export const register = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email },
       JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: JWT_EXPIRY }
     );
 
     res.status(201).json({
@@ -114,7 +114,7 @@ export const login = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { id: user.id, email: user.email },
       JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: JWT_EXPIRY }
     );
 
     res.json({
@@ -137,7 +137,7 @@ export const login = async (req: Request, res: Response) => {
 
 export const getCurrentUser = (req: Request, res: Response) => {
   try {
-    // @ts-ignore - We'll add auth middleware to add user to request
+    // @ts-ignore
     const userId = req.user.id;
     const user = users.find(u => u.id === userId);
 
@@ -153,7 +153,8 @@ export const getCurrentUser = (req: Request, res: Response) => {
       isManager: user.isManager,
       managerId: user.managerId,
       managerName: user.managerName,
-      role: user.role
+      role: user.role,
+      isPrototype: user.isPrototype
     });
   } catch (error) {
     console.error('Get current user error:', error);
