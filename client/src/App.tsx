@@ -5,7 +5,7 @@ import EmployeeDashboard from './components/EmployeeDashboard';
 import Login from './components/Login';
 import Register from './components/Register';
 import PrivateRoute from './components/PrivateRoute';
-import { loadUserFromToken, setAuthToken, getCurrentUser, logout } from './services/authService';
+import { loadUserFromToken, setAuthToken, getCurrentUser, logout, refreshToken } from './services/authService';
 import { UserAuth } from './types/Auth';
 import { 
   CssBaseline, 
@@ -42,6 +42,12 @@ function App() {
       const tokenInfo = loadUserFromToken();
       if (tokenInfo && tokenInfo.isValid) {
         try {
+          try {
+            await refreshToken();
+          } catch (refreshError) {
+            console.log('Token refresh failed, continuing with existing token');
+          }
+          
           const userData = await getCurrentUser();
           setUser(userData);
           setIsAuthenticated(true);
@@ -55,7 +61,22 @@ function App() {
     };
 
     initAuth();
-  }, []);
+    
+    const refreshInterval = setInterval(async () => {
+      if (isAuthenticated) {
+        try {
+          await refreshToken();
+          console.log('Token refreshed successfully');
+        } catch (error) {
+          console.error('Failed to refresh token:', error);
+        }
+      }
+    }, 15 * 60 * 1000);
+    
+    return () => {
+      clearInterval(refreshInterval);
+    };
+  }, [isAuthenticated]);
 
   const handleAuthSuccess = async (token: string) => {
     setIsAuthenticated(true);

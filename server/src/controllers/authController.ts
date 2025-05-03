@@ -30,7 +30,9 @@ const initRootUser = async () => {
 initRootUser();
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret_key';
-const JWT_EXPIRY = process.env.JWT_EXPIRY || '1d';
+const ACCESS_TOKEN_EXPIRY = process.env.JWT_EXPIRY || '15m';
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'your_refresh_token_secret_key';
+const REFRESH_TOKEN_EXPIRY = '7d';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -75,7 +77,7 @@ export const register = async (req: Request, res: Response) => {
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRY }
+      { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
 
     res.status(201).json({
@@ -100,25 +102,33 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-
     const user = users.find(u => u.email === email);
-    if (!user) {
+
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid credentials' });
-    }
-
-    const token = jwt.sign(
+    const accessToken = jwt.sign(
       { id: user.id, email: user.email },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRY }
+      { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
 
+    const refreshToken = jwt.sign(
+        { id: user.id, email: user.email },
+        REFRESH_TOKEN_SECRET,
+        { expiresIn: REFRESH_TOKEN_EXPIRY }
+    );
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    })
+    
     res.json({
-      token,
+      accessToken,
       user: {
         id: user.id,
         email: user.email,
@@ -134,6 +144,11 @@ export const login = async (req: Request, res: Response) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+export const logout = (req: Request, res: Response) => {
+  res.clearCookie('refreshToken');
+  res.status(200).json({ message: 'Logged out successfully' });
+}
 
 export const getCurrentUser = (req: Request, res: Response) => {
   try {
@@ -177,4 +192,32 @@ export const getManagers = (req: Request, res: Response) => {
     console.error('Get managers error:', error);
     res.status(500).json({ message: 'Server error' });
   }
-}; 
+};
+
+export const refreshToken = (req: Request, res: Response) => {
+  const token = req.cookies.refreshToken;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Missing refresh token' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, REFRESH_TOKEN_SECRET) as { id: number; email: string };
+    const user = users.find(u => u.id === decoded.id);
+
+    if (!user) {
+      return res.status(404).json({message: 'User not found'});
+    }
+
+    const newAccessToken = jwt.sign(
+        {id: user.id, email: user.email},
+        JWT_SECRET,
+        {expiresIn: ACCESS_TOKEN_EXPIRY}
+    );
+
+    res.json({accessToken: newAccessToken});
+  } catch (err) {
+    console.error('Refresh token error', err);
+    return res.status(403).json({message: 'Invalid or expired refresh token'})
+  }
+}

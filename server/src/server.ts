@@ -5,18 +5,23 @@ import { users } from './controllers/authController';
 import authRoutes from './routes/authRoutes';
 import timeRecordRoutes from './routes/timeRecordRoutes';
 
+const cookieParser = require('cookie-parser');
+
 dotenv.config();
 const app = express();
 
 const corsOptions = {
   origin: ['http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cookieParser());
 
 app.locals.users = users;
 app.use('/api/auth', authRoutes);

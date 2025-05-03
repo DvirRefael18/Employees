@@ -109,7 +109,7 @@ const Register: React.FC<RegisterProps> = () => {
       setSuccess(true);
       setIsLoading(false);
       setShowSuccessSnackbar(true);
-      setShowLoadingScreen(true)
+      setShowLoadingScreen(true);
       setTimeout(() => {
         navigate('/login');
       }, 2000);

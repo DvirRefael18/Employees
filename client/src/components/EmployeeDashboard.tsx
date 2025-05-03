@@ -258,7 +258,13 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
         </Button>
       </Box>)}
 
-      <Dialog open={dialogOpen} onClose={handleDialogClose}>
+      <Dialog open={dialogOpen} onClose={handleDialogClose} PaperProps={{
+        sx: {
+          width: '600px',
+          maxWidth: '90vw',
+          borderRadius: '10px'
+        }
+      }} >
         <DialogTitle>
           {dialogAction === 'clockIn' ? 'Clock In Report' : 'Clock Out Report'}
         </DialogTitle>
@@ -267,7 +273,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
             autoFocus
             margin="dense"
             id="report"
-            label="Report Text"
+            label="Report Text (not required)"
             type="text"
             fullWidth
             multiline
@@ -277,8 +283,8 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} color="inherit">Cancel</Button>
-          <Button onClick={handleDialogSave} color="primary">Save</Button>
+          <Button onClick={handleDialogClose} color="inherit" variant={'outlined'}>Cancel</Button>
+          <Button onClick={handleDialogSave} color="primary" variant={'contained'}>Save</Button>
         </DialogActions>
       </Dialog>
 

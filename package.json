@@ -10,6 +10,12 @@
     "install-all": "npm install && cd server && npm install && cd ../client && npm install"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/express": "^5.0.1",
     "concurrently": "^8.2.0"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0"
   }
-} 
+}
