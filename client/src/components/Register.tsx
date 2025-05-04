@@ -22,7 +22,6 @@ import {
   SelectChangeEvent,
   Divider,
   useTheme,
-  useMediaQuery,
   Avatar,
   Snackbar
 } from '@mui/material';
@@ -31,7 +30,6 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const Register: React.FC = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -122,7 +120,7 @@ const Register: React.FC = () => {
   return (
     <Box sx={{ 
       display: 'flex', 
-      flexDirection: isMobile ? 'column' : 'row',
+      flexDirection: 'row',
       height: '80vh',
       maxWidth: '1200px',
       mx: 'auto'
@@ -151,73 +149,71 @@ const Register: React.FC = () => {
         </Alert>
       </Snackbar>
 
-      {!isMobile && (
-        <Box 
-          sx={{
-            flex: '0 0 60%',
-            backgroundImage: 'url(https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260)',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+      <Box 
+        sx={{
+          flex: '0 0 60%',
+          backgroundImage: 'url(https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260)',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderRadius: 2,
+          boxShadow: 3,
+          position: 'relative',
+          height: '100%',
+          mr: 2,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
             borderRadius: 2,
-            boxShadow: 3,
+          }
+        }}
+      >
+        <Box
+          sx={{
             position: 'relative',
             height: '100%',
-            mr: 2,
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              borderRadius: 2,
-            }
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'white',
+            padding: 4,
+            zIndex: 1
           }}
         >
+          <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+            Join Our Team
+          </Typography>
+          <Typography variant="h6" sx={{ maxWidth: '80%', textAlign: 'center' }}>
+            Create your account to access employee management features
+          </Typography>
           <Box
             sx={{
-              position: 'relative',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              color: 'white',
-              padding: 4,
-              zIndex: 1
+              mt: 3,
+              p: 3,
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 2,
+              maxWidth: '80%',
             }}
           >
-            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
-              Join Our Team
+            <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
+              "Our employee management system helps teams stay organized and productive."
             </Typography>
-            <Typography variant="h6" sx={{ maxWidth: '80%', textAlign: 'center' }}>
-              Create your account to access employee management features
+            <Typography variant="body2" sx={{ mt: 1, textAlign: 'right' }}>
+              — Team Lead
             </Typography>
-            <Box
-              sx={{
-                mt: 3,
-                p: 3,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: 2,
-                maxWidth: '80%',
-              }}
-            >
-              <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-                "Our employee management system helps teams stay organized and productive."
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 1, textAlign: 'right' }}>
-                — Team Lead
-              </Typography>
-            </Box>
           </Box>
         </Box>
-      )}
+      </Box>
 
       {/* Right side - Register form */}
-      <Box sx={{ flex: isMobile ? '1' : '0 0 40%', overflowY: 'auto' }}>
+      <Box sx={{ flex: '0 0 40%', overflowY: 'auto' }}>
         <Paper 
           elevation={6} 
           square 
@@ -226,7 +222,7 @@ const Register: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            p: { xs: 2, sm: 4 },
+            p: 4,
             minHeight: '100%'
           }}
         >
@@ -263,10 +259,11 @@ const Register: React.FC = () => {
                 Registration successful! Redirecting to login page...
               </Alert>
             )}
-            
+
             <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
               <TextField
                 margin="normal"
+                required
                 fullWidth
                 id="firstName"
                 label="First Name"
@@ -279,6 +276,7 @@ const Register: React.FC = () => {
               />
               <TextField
                 margin="normal"
+                required
                 fullWidth
                 id="lastName"
                 label="Last Name"
@@ -315,41 +313,40 @@ const Register: React.FC = () => {
               />
               <TextField
                 margin="normal"
-                required
                 fullWidth
+                id="role"
+                label="Job Title"
                 name="role"
-                label="Role"
-                autoComplete="role"
                 value={formData.role}
                 onChange={handleChange}
                 variant="outlined"
               />
-              <FormControl fullWidth margin="normal" required variant="outlined">
+              
+              <FormControl fullWidth margin="normal">
                 <InputLabel id="manager-select-label">Manager</InputLabel>
-                {loadingManagers ? (
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-                    <CircularProgress size={24} sx={{ mr: 1 }} />
-                    <Typography variant="body2">Loading managers...</Typography>
-                  </Box>
-                ) : (
-                  <>
-                    <Select
-                      labelId="manager-select-label"
-                      id="managerId"
-                      name="managerId"
-                      value={formData.managerId ? formData.managerId.toString() : ''}
-                      label="Manager"
-                      onChange={handleSelectChange}
-                    >
-                      {managers.map(manager => (
-                        <MenuItem key={manager.id} value={manager.id.toString()}>
-                          {manager.name} ({manager.email})
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    <FormHelperText>Select your manager</FormHelperText>
-                  </>
-                )}
+                <Select
+                  labelId="manager-select-label"
+                  id="manager-select"
+                  name="managerId"
+                  value={formData.managerId ? formData.managerId.toString() : ''}
+                  label="Manager"
+                  onChange={handleSelectChange}
+                  disabled={loadingManagers}
+                  required
+                >
+                  {loadingManagers ? (
+                    <MenuItem value="">
+                      <CircularProgress size={24} />
+                    </MenuItem>
+                  ) : (
+                    managers.map(manager => (
+                      <MenuItem key={manager.id} value={manager.id.toString()}>
+                        {manager.name} ({manager.email})
+                      </MenuItem>
+                    ))
+                  )}
+                </Select>
+                <FormHelperText>Select your manager</FormHelperText>
               </FormControl>
               
               <FormControlLabel
@@ -361,14 +358,15 @@ const Register: React.FC = () => {
                     color="primary"
                   />
                 }
-                label="Is Manager"
+                label="I am a manager"
                 sx={{ mt: 1 }}
               />
+              
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
-                color="primary"
+                color="secondary"
                 sx={{ 
                   mt: 3, 
                   mb: 2,
@@ -376,15 +374,15 @@ const Register: React.FC = () => {
                   fontWeight: 'bold',
                   fontSize: '1rem'
                 }}
-                disabled={isLoading || loadingManagers || success}
+                disabled={isLoading || loadingManagers}
               >
                 {isLoading ? 'Registering...' : 'Register'}
               </Button>
-
+              
               <Box mt={3} mb={2}>
                 <Divider>
                   <Typography variant="body2" color="text.secondary">
-                    Already registered?
+                    Already have an account?
                   </Typography>
                 </Divider>
               </Box>
@@ -402,10 +400,6 @@ const Register: React.FC = () => {
               </Box>
             </Box>
           </Box>
-          
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
-            © {new Date().getFullYear()} Employee Management System
-          </Typography>
         </Paper>
       </Box>
     </Box>

@@ -14,7 +14,6 @@ A full-stack application built with Express (TypeScript) backend and React (Type
 - Manager approval workflow
 - TypeScript integration for improved type safety
 - RESTful API architecture
-- Responsive frontend design
 
 ## Setup Instructions
 

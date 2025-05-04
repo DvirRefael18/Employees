@@ -12,7 +12,6 @@ import {
   Alert,
   Divider,
   useTheme,
-  useMediaQuery,
   Avatar
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -23,7 +22,6 @@ interface LoginProps {
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
@@ -70,77 +68,75 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   return (
     <Box sx={{ 
       display: 'flex', 
-      flexDirection: isMobile ? 'column' : 'row',
+      flexDirection: 'row',
       height: '80vh',
       maxWidth: '1200px',
       mx: 'auto'
     }}>
-      {!isMobile && (
-        <Box 
-          sx={{
-            flex: '0 0 60%',
-            backgroundImage: 'url(https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260)',
-            backgroundRepeat: 'no-repeat',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
+      <Box 
+        sx={{
+          flex: '0 0 60%',
+          backgroundImage: 'url(https://images.pexels.com/photos/3183150/pexels-photo-3183150.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260)',
+          backgroundRepeat: 'no-repeat',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          borderRadius: 2,
+          boxShadow: 3,
+          position: 'relative',
+          height: '100%',
+          mr: 2,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
             borderRadius: 2,
-            boxShadow: 3,
+          }
+        }}
+      >
+        <Box
+          sx={{
             position: 'relative',
             height: '100%',
-            mr: 2,
-            '&::before': {
-              content: '""',
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.4)',
-              borderRadius: 2,
-            }
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            color: 'white',
+            padding: 4,
+            zIndex: 1
           }}
         >
+          <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
+            EMS
+          </Typography>
+          <Typography variant="h6" sx={{ maxWidth: '80%', textAlign: 'center' }}>
+            Streamline your workforce management with our comprehensive platform
+          </Typography>
           <Box
             sx={{
-              position: 'relative',
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              color: 'white',
-              padding: 4,
-              zIndex: 1
+              mt: 3,
+              p: 3,
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: 2,
+              maxWidth: '80%',
             }}
           >
-            <Typography variant="h3" component="h1" gutterBottom sx={{ fontWeight: 700 }}>
-              EMS
+            <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
+              "This platform has transformed how we manage our team's time and productivity."
             </Typography>
-            <Typography variant="h6" sx={{ maxWidth: '80%', textAlign: 'center' }}>
-              Streamline your workforce management with our comprehensive platform
+            <Typography variant="body2" sx={{ mt: 1, textAlign: 'right' }}>
+              — Oren Dvash, R&D Lead
             </Typography>
-            <Box
-              sx={{
-                mt: 3,
-                p: 3,
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                borderRadius: 2,
-                maxWidth: '80%',
-              }}
-            >
-              <Typography variant="body1" sx={{ fontStyle: 'italic' }}>
-                "This platform has transformed how we manage our team's time and productivity."
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 1, textAlign: 'right' }}>
-                — Oren Dvash, R&D Lead
-              </Typography>
-            </Box>
           </Box>
         </Box>
-      )}
+      </Box>
 
-      <Box sx={{ flex: isMobile ? '1' : '0 0 40%' }}>
+      <Box sx={{ flex: '0 0 40%' }}>
         <Paper 
           elevation={6} 
           square 
@@ -150,7 +146,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'center',
-            p: { xs: 2, sm: 4 },
+            p: 4,
             height: '100%'
           }}
         >
@@ -248,7 +244,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           </Box>
           
           <Typography variant="body2" color="text.secondary" sx={{ mt: 4 }}>
-            © {new Date().getFullYear()} Employee Management System
+              © {new Date().getFullYear()} Employee Management System
           </Typography>
         </Paper>
       </Box>
