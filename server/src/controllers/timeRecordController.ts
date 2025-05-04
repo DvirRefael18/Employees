@@ -82,7 +82,7 @@ export const clockOut = async (req: Request, res: Response) => {
       endTime: getCurrentTime(),
       notes: {
         startTimeNote: prevStartTimeNote ? prevStartTimeNote : '',
-        endTimeNote: notes || timeRecords[activeRecordIndex].notes
+        endTimeNote: notes || ''
       },
       updatedAt: new Date()
     };
@@ -139,7 +139,7 @@ export const getEmployeeTimeRecords = async (req: Request, res: Response) => {
 export const approveTimeRecord = async (req: Request, res: Response) => {
   try {
     const recordId = parseInt(req.params.id);
-    // @ts-ignore - Auth middleware adds user to request
+    // @ts-ignore
     const managerId = req.user.id;
     
     const recordIndex = timeRecords.findIndex(r => r.id === recordId);
@@ -177,7 +177,7 @@ export const rejectTimeRecord = async (req: Request, res: Response) => {
   try {
     const recordId = parseInt(req.params.id);
     const { notes } = req.body;
-    // @ts-ignore - Auth middleware adds user to request
+    // @ts-ignore
     const managerId = req.user.id;
     
     const recordIndex = timeRecords.findIndex(r => r.id === recordId);
