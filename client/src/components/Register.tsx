@@ -21,7 +21,6 @@ import {
   CircularProgress,
   SelectChangeEvent,
   Divider,
-  useTheme,
   Avatar,
   Snackbar
 } from '@mui/material';
@@ -29,7 +28,6 @@ import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const Register: React.FC = () => {
-  const theme = useTheme();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -103,10 +101,15 @@ const Register: React.FC = () => {
       setSuccess(true);
       setIsLoading(false);
       setShowSuccessSnackbar(true);
-      setShowLoadingScreen(true);
+
+      setTimeout(() => {
+        setShowLoadingScreen(true);
+      }, 1000);
+
       setTimeout(() => {
         navigate('/login');
       }, 2000);
+
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Something went wrong');
       setIsLoading(false);

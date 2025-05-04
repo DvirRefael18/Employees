@@ -11,7 +11,6 @@ import {
   Paper,
   Alert,
   Divider,
-  useTheme,
   Avatar
 } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -21,8 +20,6 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
-  const theme = useTheme();
-  
   const [formData, setFormData] = useState<LoginFormData>({
     email: '',
     password: ''
