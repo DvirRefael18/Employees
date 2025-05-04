@@ -176,7 +176,6 @@ export const approveTimeRecord = async (req: Request, res: Response) => {
 export const rejectTimeRecord = async (req: Request, res: Response) => {
   try {
     const recordId = parseInt(req.params.id);
-    const { notes } = req.body;
     // @ts-ignore
     const managerId = req.user.id;
     
@@ -219,7 +218,7 @@ export const rejectTimeRecord = async (req: Request, res: Response) => {
 
 export const checkClockStatus = async (req: Request, res: Response) => {
   try {
-    // @ts-ignore - Auth middleware adds user to request
+    // @ts-ignore
     const userId = req.user.id;
     
     const activeRecord = timeRecords.find(

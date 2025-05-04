@@ -72,16 +72,6 @@ export const getClockStatus = async (): Promise<ClockStatus> => {
   }
 };
 
-export const getUserTimeRecords = async (): Promise<TimeRecord[]> => {
-  try {
-    const response = await axios.get(`${API_URL}/user`);
-    return response.data;
-  } catch (error) {
-    console.error('Get user time records error:', error);
-    throw error;
-  }
-};
-
 export const getEmployeeTimeRecords = async (): Promise<TimeRecord[]> => {
   try {
     const response = await axios.get(`${API_URL}/employees`);

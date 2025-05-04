@@ -153,8 +153,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
     try {
       setActionLoading(recordId);
       await approveTimeRecord(recordId);
-      
-      // Update the status in the local state
+
       setTimeRecords(prevRecords =>
         prevRecords.map(record =>
           record.id === recordId ? { ...record, status: 'approved' } : record

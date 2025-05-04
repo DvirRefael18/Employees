@@ -10,6 +10,8 @@ A full-stack application built with Express (TypeScript) backend and React (Type
 ## Features
 
 - Employee CRUD operations
+- Time tracking with clock in/out functionality
+- Manager approval workflow
 - TypeScript integration for improved type safety
 - RESTful API architecture
 - Responsive frontend design
@@ -34,17 +36,41 @@ npm run install-all
 # Run both server and client concurrently
 npm start
 
-# Server: http://localhost:5123
+# Server: http://localhost:5100
 # Client: http://localhost:3000
+```
+
+### Running Tests
+
+```bash
+# Run tests for the server
+cd server
+npm test
+
+# Run tests in watch mode
+npm run test:watch
 ```
 
 ## API Endpoints
 
-- `GET /api/employees` - Retrieve all employees
-- `GET /api/employees/:id` - Retrieve a specific employee
-- `POST /api/employees` - Create employee
-- `PUT /api/employees/:id` - Update employee
-- `DELETE /api/employees/:id` - Delete employee
+### Authentication
+
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `POST /api/auth/refreshToken` - Refresh JWT token
+- `GET /api/auth/me` - Get current user info
+- `GET /api/auth/managers` - Get all managers
+
+### Time Records
+
+- `POST /api/time-records/clock-in` - Clock in
+- `POST /api/time-records/clock-out` - Clock out
+- `GET /api/time-records/status` - Check clock status
+- `GET /api/time-records/user` - Get time records for current user
+- `GET /api/time-records/employees` - Get time records for employees (manager only)
+- `PUT /api/time-records/:id/approve` - Approve time record (manager only)
+- `PUT /api/time-records/:id/reject` - Reject time record (manager only)
 
 ## Technologies
 
@@ -52,8 +78,12 @@ npm start
 - Express.js
 - TypeScript
 - Node.js
+- Jest (testing)
 
 ### Frontend
 - React
 - TypeScript
+- Material UI
+- React Router
+- Axios
 - Modern CSS 
