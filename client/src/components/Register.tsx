@@ -29,11 +29,7 @@ import {
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
-interface RegisterProps {
-  onRegisterSuccess: (token: string) => void;
-}
-
-const Register: React.FC<RegisterProps> = () => {
+const Register: React.FC = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();

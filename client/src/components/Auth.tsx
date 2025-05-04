@@ -28,17 +28,9 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     }, 2000);
   };
 
-  const handleRegisterSuccess = (token: string) => {
-    if (token) {
-      setIsLoading(true);
-      
-      setTimeout(() => {
-        onAuthSuccess(token);
-      }, 2000);
-    } else {
-      setRegistrationSuccess(true);
-      setActiveTab(0);
-    }
+  const handleRegistrationComplete = () => {
+    setRegistrationSuccess(true);
+    setActiveTab(0);
   };
 
   if (isLoading) {
@@ -70,9 +62,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           {activeTab === 0 ? (
             <Login onLoginSuccess={handleLoginSuccess} />
           ) : (
-            <Register 
-              onRegisterSuccess={handleRegisterSuccess} 
-            />
+            <Register />
           )}
         </Box>
       </Paper>

@@ -16,9 +16,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField
+  TextField,
+  Tooltip,
 } from '@mui/material';
 import { Employee } from '../types/Employee';
+import NoteIcon from '@mui/icons-material/Note'
 import { 
   clockIn, 
   clockOut, 
@@ -108,7 +110,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
     } catch (err) {
       console.error('Error checking clock status:', err);
       setClockStatusLoading(false);
-      throw err; // Re-throw to let caller handle if needed
+      throw err;
     }
   };
 
@@ -309,8 +311,29 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
                   <TableRow key={record.id}>
                     <TableCell>{record.employeeName || 'Unknown'}</TableCell>
                     <TableCell>{record.date}</TableCell>
-                    <TableCell>{record.startTime}</TableCell>
-                    <TableCell>{record.endTime || 'Active'}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {record.startTime}
+                        {record?.notes?.startTimeNote && (
+                            <Tooltip title={record.notes.startTimeNote} sx={{ ml: 1 }}>
+                              <NoteIcon fontSize="small" color="action" />
+                            </Tooltip>
+                        )}
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      {record.endTime && (
+                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                            {record.endTime}
+                            {record?.notes?.endTimeNote && (
+                                <Tooltip title={record.notes.endTimeNote} sx={{ ml: 1 }}>
+                                  <NoteIcon fontSize="small" color="action" />
+                                </Tooltip>
+                            )}
+                          </Box>
+                      )}
+                      {!record.endTime && 'Active'}
+                    </TableCell>
                     <TableCell align="center">
                       {record.status === 'pending' && record.endTime && (
                         <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1 }}>

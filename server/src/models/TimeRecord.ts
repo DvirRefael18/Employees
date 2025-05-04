@@ -1,12 +1,17 @@
+export interface Notes {
+  startTimeNote: string;
+  endTimeNote: string;
+}
+
 export interface TimeRecord {
   id: number;
   userId: number;
-  date: string; // YYYY-MM-DD format
-  startTime: string; // HH:MM format
-  endTime?: string; // HH:MM format (undefined when currently clocked in)
+  date: string;
+  startTime: string;
+  endTime?: string;
   status: 'pending' | 'approved' | 'rejected';
-  managerId: number; // ID of the manager who needs to approve this
-  notes?: string; // Optional notes from employee or manager
+  managerId: number;
+  notes?: Notes;
   createdAt: Date;
   updatedAt: Date;
 } 

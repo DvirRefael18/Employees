@@ -1,6 +1,7 @@
 import axios from 'axios';
+import config from '../config/config';
 
-const API_URL = 'http://localhost:5100/api/time-records';
+const API_URL = config.api.timeRecords;
 
 // Add request interceptor to ensure token is included in all requests
 axios.interceptors.request.use(
@@ -16,6 +17,11 @@ axios.interceptors.request.use(
   }
 );
 
+export interface Notes {
+  startTimeNote: string;
+  endTimeNote: string;
+}
+
 export interface TimeRecord {
   id: number;
   userId: number;
@@ -24,7 +30,7 @@ export interface TimeRecord {
   endTime?: string;
   status: 'pending' | 'approved' | 'rejected';
   managerId: number;
-  notes?: string;
+  notes?: Notes;
   createdAt: Date;
   updatedAt: Date;
   employeeName?: string;
@@ -39,7 +45,6 @@ export interface ClockStatus {
 export const clockIn = async (reportText?: string): Promise<TimeRecord> => {
   try {
     const response = await axios.post(`${API_URL}/clock-in`, { notes: reportText });
-    console.log('response', response)
     return response.data;
   } catch (error) {
     console.error('Clock in error:', error);

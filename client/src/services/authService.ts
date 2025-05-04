@@ -1,7 +1,8 @@
 import axios from 'axios';
 import { LoginFormData, RegisterFormData, UserAuth } from '../types/Auth';
+import config from '../config/config';
 
-const API_URL = 'http://localhost:5100/api/auth';
+const API_URL = config.api.auth;
 
 let isRefreshing = false;
 let failedQueue: { resolve: Function; reject: Function }[] = [];
@@ -87,13 +88,6 @@ export const register = async (formData: RegisterFormData): Promise<{ token: str
     if (!token) {
       throw new Error('No token received from server');
     }
-    
-    localStorage.setItem('token', token);
-    if (refreshToken) {
-      localStorage.setItem('refreshToken', refreshToken);
-    }
-    
-    setAuthToken(token);
     
     return { token, refreshToken, user };
   } catch (error) {

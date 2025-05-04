@@ -46,7 +46,10 @@ export const clockIn = async (req: Request, res: Response) => {
       startTime: getCurrentTime(),
       status: 'pending',
       managerId: user.managerId,
-      notes: notes || 'Clock in',
+      notes: {
+        startTimeNote: notes,
+        endTimeNote: ''
+      },
       createdAt: new Date(),
       updatedAt: new Date()
     };
@@ -73,11 +76,14 @@ export const clockOut = async (req: Request, res: Response) => {
     if (activeRecordIndex === -1) {
       return res.status(400).json({ message: 'User is not clocked in' });
     }
-    
+    const prevStartTimeNote = timeRecords[activeRecordIndex]?.notes?.startTimeNote;
     const updatedRecord = {
       ...timeRecords[activeRecordIndex],
       endTime: getCurrentTime(),
-      notes: notes || timeRecords[activeRecordIndex].notes || 'Clock out',
+      notes: {
+        startTimeNote: prevStartTimeNote ? prevStartTimeNote : '',
+        endTimeNote: notes || timeRecords[activeRecordIndex].notes
+      },
       updatedAt: new Date()
     };
     
@@ -189,11 +195,16 @@ export const rejectTimeRecord = async (req: Request, res: Response) => {
     if (!record.endTime) {
       return res.status(400).json({ message: 'Cannot reject an active time record' });
     }
-    
+
+    const startTimeNote = record.notes?.startTimeNote
+    const endTimeNote = record.notes?.endTimeNote
     const updatedRecord = {
       ...record,
       status: 'rejected' as const,
-      notes: notes || 'Rejected by manager',
+      notes: {
+        startTimeNote: startTimeNote || '',
+        endTimeNote: endTimeNote || '',
+      },
       updatedAt: new Date()
     };
     

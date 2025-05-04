@@ -195,7 +195,7 @@ function App() {
                   isAuthenticated ? (
                     <Navigate to="/dashboard" replace />
                   ) : (
-                    <Register onRegisterSuccess={handleAuthSuccess} />
+                    <Register />
                   )
                 } 
               />
