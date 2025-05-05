@@ -5,5 +5,5 @@ export interface Employee {
   email: string;
   role: string;
   manager: string;
-  isPrototype: boolean;
+  isPrototype?: boolean;
 } 

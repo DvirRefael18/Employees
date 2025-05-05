@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import { login } from '../services/authService';
-import { LoginFormData } from '../types/Auth';
-import LoadingScreen from './LoadingScreen';
+import { login } from '../api/auth';
+import { LoginFormData } from '../types';
+import { Loader } from '../components';
 import { 
   TextField, 
   Button, 
@@ -59,7 +59,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   };
 
   if (showLoadingScreen) {
-    return <LoadingScreen message="Preparing your dashboard..." />;
+    return <Loader message="Preparing your dashboard..." />;
   }
 
   return (

@@ -45,9 +45,6 @@ npm start
 # Run tests for the server
 cd server
 npm test
-
-# Run tests in watch mode
-npm run test:watch
 ```
 
 ## API Endpoints
@@ -55,34 +52,52 @@ npm run test:watch
 ### Authentication
 
 - `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
+- `POST /api/auth/login` - Login a user
+- `POST /api/auth/logout` - Logout a user
+- `GET /api/auth/me` - Get current user data
 - `POST /api/auth/refreshToken` - Refresh JWT token
-- `GET /api/auth/me` - Get current user info
-- `GET /api/auth/managers` - Get all managers
 
-### Time Records
+### Employee Management
 
-- `POST /api/time-records/clock-in` - Clock in
-- `POST /api/time-records/clock-out` - Clock out
-- `GET /api/time-records/status` - Check clock status
-- `GET /api/time-records/user` - Get time records for current user
-- `GET /api/time-records/employees` - Get time records for employees (manager only)
-- `PUT /api/time-records/:id/approve` - Approve time record (manager only)
-- `PUT /api/time-records/:id/reject` - Reject time record (manager only)
+- `GET /api/employees/managers` - Get list of managers (public)
+- `POST /api/employees/clock-in` - Clock in an employee
+- `POST /api/employees/clock-out` - Clock out an employee
+- `GET /api/employees/status` - Check clock status for current user
+- `GET /api/employees/records` - Get time records for current user
+- `GET /api/employees/team-records` - Get time records for manager's team
+- `PUT /api/employees/records/:id/approve` - Approve a time record
+- `PUT /api/employees/records/:id/reject` - Reject a time record
 
-## Technologies
-
-### Backend
-- Express.js
-- TypeScript
-- Node.js
-- Jest (testing)
+## Technologies Used
 
 ### Frontend
 - React
 - TypeScript
-- Material UI
-- React Router
+- Material-UI
 - Axios
-- Modern CSS 
+
+### Backend
+- Node.js
+- Express
+- TypeScript
+- JWT Authentication
+
+## Project Structure
+
+### Client
+- `/src/api` - API client with axios instance
+- `/src/components` - Reusable UI components
+- `/src/pages` - Page components 
+- `/src/routes` - React router setup
+- `/src/types` - TypeScript type definitions
+
+### Server
+- `/src/controllers` - API endpoint handlers
+- `/src/middleware` - Express middleware
+- `/src/models` - Data models
+- `/src/routes` - Express routes
+
+### Notes
+
+- The First employee that is going to be created as a manager will be another prototype manager.
+- Thus, to login into admin: username - admin_prototype@employee.com, password - admin123

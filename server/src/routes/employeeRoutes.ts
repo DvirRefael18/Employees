@@ -6,11 +6,14 @@ import {
   getEmployeeTimeRecords,
   approveTimeRecord,
   rejectTimeRecord,
-  checkClockStatus
-} from '../controllers/timeRecordController';
+  checkClockStatus,
+  getManagers
+} from '../controllers/employeeController';
 import { authMiddleware } from '../middleware/auth';
 
 const router = express.Router();
+
+router.get('/managers', getManagers);
 
 router.use(authMiddleware);
 
@@ -18,10 +21,10 @@ router.post('/clock-in', clockIn);
 router.post('/clock-out', clockOut);
 router.get('/status', checkClockStatus);
 
-router.get('/user', getUserTimeRecords);
-router.get('/employees', getEmployeeTimeRecords);
+router.get('/records', getUserTimeRecords);
+router.get('/team-records', getEmployeeTimeRecords);
 
-router.put('/:id/approve', approveTimeRecord);
-router.put('/:id/reject', rejectTimeRecord);
+router.put('/records/:id/approve', approveTimeRecord);
+router.put('/records/:id/reject', rejectTimeRecord);
 
 export default router; 

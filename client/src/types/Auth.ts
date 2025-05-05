@@ -5,7 +5,9 @@ export interface UserAuth {
   lastName?: string;
   isManager?: boolean;
   managerId?: number;
+  managerName?: string;
   role?: string;
+  isPrototype?: boolean;
 }
 
 export interface Manager {

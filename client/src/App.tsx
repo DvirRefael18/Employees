@@ -1,24 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter, Route, Routes, Navigate, Link as RouterLink } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import './App.css';
-import EmployeeDashboard from './components/EmployeeDashboard';
-import Login from './components/Login';
-import Register from './components/Register';
-import PrivateRoute from './components/PrivateRoute';
-import { loadUserFromToken, setAuthToken, getCurrentUser, logout, refreshToken } from './services/authService';
-import { UserAuth } from './types/Auth';
+import {
+  loadUserFromToken,
+  setAuthToken,
+  getCurrentUser,
+  logout,
+  refreshToken
+} from './api/auth';
+import { UserAuth } from './types';
 import { 
   CssBaseline, 
   ThemeProvider, 
   createTheme, 
-  AppBar, 
-  Toolbar, 
-  Typography, 
-  Button, 
   Container,
   Box,
-  CircularProgress
 } from '@mui/material';
+import AppRoutes from './routes/AppRoutes';
+import { Loader, NavBar } from './components';
 
 const theme = createTheme({
   palette: {
@@ -105,27 +104,7 @@ function App() {
     return (
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100vh'
-          }}
-        >
-          <CircularProgress />
-        </Box>
-      </ThemeProvider>
-    );
-  }
-
-  if (logoutRedirect) {
-    return (
-      <ThemeProvider theme={theme}>
-        <CssBaseline />
-        <BrowserRouter>
-          <Navigate to="/login" replace />
-        </BrowserRouter>
+        <Loader message="Loading application..." />
       </ThemeProvider>
     );
   }
@@ -135,90 +114,21 @@ function App() {
       <CssBaseline />
       <BrowserRouter>
         <Box sx={{ flexGrow: 1 }}>
-          <AppBar position="static">
-            <Toolbar>
-              <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Employee Management System
-              </Typography>
-              {isAuthenticated && (
-                <>
-                  <Button 
-                    color="inherit" 
-                    component={RouterLink} 
-                    to="/dashboard"
-                    sx={{ mr: 2 }}
-                  >
-                    Dashboard
-                  </Button>
-                  <Button color="inherit" onClick={handleLogout}>
-                    Logout
-                  </Button>
-                </>
-              )}
-              {!isAuthenticated && (
-                <>
-                  <Button 
-                    color="inherit" 
-                    component={RouterLink} 
-                    to="/login"
-                    sx={{ mr: 2 }}
-                  >
-                    Login
-                  </Button>
-                  <Button 
-                    color="inherit" 
-                    component={RouterLink} 
-                    to="/register"
-                  >
-                    Register
-                  </Button>
-                </>
-              )}
-            </Toolbar>
-          </AppBar>
+          <Routes>
+            <Route path="*" element={
+              <NavBar 
+                isAuthenticated={isAuthenticated} 
+                handleLogout={handleLogout} 
+              />
+            } />
+          </Routes>
           
           <Container sx={{ mt: 4 }}>
-            <Routes>
-              <Route 
-                path="/login" 
-                element={
-                  isAuthenticated ? (
-                    <Navigate to="/dashboard" replace />
-                  ) : (
-                    <Login onLoginSuccess={handleAuthSuccess} />
-                  )
-                } 
-              />
-              <Route 
-                path="/register" 
-                element={
-                  isAuthenticated ? (
-                    <Navigate to="/dashboard" replace />
-                  ) : (
-                    <Register />
-                  )
-                } 
-              />
-              <Route 
-                path="/dashboard" 
-                element={
-                  <PrivateRoute isAuthenticated={isAuthenticated}>
-                    <EmployeeDashboard user={user} />
-                  </PrivateRoute>
-                } 
-              />
-              <Route 
-                path="/" 
-                element={
-                  isAuthenticated ? (
-                    <Navigate to="/dashboard" replace />
-                  ) : (
-                    <Navigate to="/login" replace />
-                  )
-                } 
-              />
-              <Route path="*" element={<Navigate to="/login" replace />} />
-            </Routes>
+            <AppRoutes 
+              isAuthenticated={isAuthenticated} 
+              user={user} 
+              onLoginSuccess={handleAuthSuccess}
+            />
           </Container>
         </Box>
       </BrowserRouter>

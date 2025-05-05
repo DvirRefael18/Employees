@@ -19,30 +19,20 @@ import {
   TextField,
   Tooltip,
 } from '@mui/material';
-import { Employee } from '../types/Employee';
-import NoteIcon from '@mui/icons-material/Note'
+import { Employee, UserAuth, TimeRecord, Manager } from '../types';
+import NoteIcon from '@mui/icons-material/Note';
 import { 
   clockIn, 
   clockOut, 
   getClockStatus, 
   getEmployeeTimeRecords,
   approveTimeRecord,
-  rejectTimeRecord,
-  TimeRecord
-} from '../services/timeRecordService';
+  rejectTimeRecord
+} from '../api/time';
+import { getManagers } from '../api/auth';
 
 interface EmployeeDashboardProps {
-  user: {
-    id: number;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-    isManager?: boolean;
-    managerId?: number;
-    managerName?: string;
-    role?: string;
-    isPrototype?: boolean;
-  } | null;
+  user: UserAuth | null;
 }
 
 const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
@@ -65,13 +55,25 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
     }
     const fetchData = async () => {
       try {
+        let managerName = user.managerName;
+        
+        if (user.managerId && !managerName) {
+          try {
+            const managers = await getManagers();
+            const userManager = managers.find((m: Manager) => m.id === user.managerId);
+            managerName = userManager ? userManager.name : '';
+          } catch (err) {
+            console.error('Error fetching manager info:', err);
+          }
+        }
+        
         setEmployee({
           id: user.id,
           firstName: user.firstName || '',
           lastName: user.lastName || '',
           email: user.email,
           role: user.role || '',
-          manager: user.managerName || '',
+          manager: managerName || '',
           isPrototype: user.isPrototype || false
         });
 
@@ -153,7 +155,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
     try {
       setActionLoading(recordId);
       await approveTimeRecord(recordId);
-
+      
       setTimeRecords(prevRecords =>
         prevRecords.map(record =>
           record.id === recordId ? { ...record, status: 'approved' } : record
@@ -212,52 +214,131 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
   }
 
   return (
-    <Box sx={{ mt: 3 }}>
-      <Typography variant="h4" component="h2" gutterBottom>
-        EMPLOYEE DETAILS
-      </Typography>
-
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Box sx={{ display: 'flex', flexWrap: 'wrap' }}>
-          <Box sx={{ width: '50%', mb: 2 }}>
-            <Typography variant="subtitle1">First Name:</Typography>
-            <Typography variant="body1">{employee?.firstName}</Typography>
-          </Box>
-          <Box sx={{ width: '50%', mb: 2 }}>
-            <Typography variant="subtitle1">Last Name:</Typography>
-            <Typography variant="body1">{employee?.lastName}</Typography>
-          </Box>
-          <Box sx={{ width: '50%', mb: 2 }}>
-            <Typography variant="subtitle1">Role:</Typography>
-            <Typography variant="body1">{employee?.role}</Typography>
-          </Box>
-          {!employee?.isPrototype && (<Box sx={{ width: '50%', mb: 2 }}>
-            <Typography variant="subtitle1" color="text.secondary">Manager:</Typography>
-            <Typography variant="body1">{employee?.manager}</Typography>
-          </Box>)}
+    <Box sx={{ minHeight: '80vh' }}>
+      <Paper 
+        elevation={4}
+        sx={{ 
+          p: 4, 
+          mb: 4, 
+          borderRadius: 2,
+          backgroundImage: 'linear-gradient(to right, #f5f7fa, #e8eef4)',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
+        <Box 
+          sx={{
+            position: 'absolute',
+            top: 0,
+            right: 0,
+            width: '40%',
+            height: '100%',
+            opacity: 0.06,
+            backgroundImage: 'url(https://img.icons8.com/ios/250/000000/clock--v1.png)',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'right center',
+            backgroundSize: 'contain',
+            zIndex: 0
+          }}
+        />
+      
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography variant="h4" component="h1" gutterBottom fontWeight="500" color="primary.dark">
+            Welcome, {employee?.firstName} {employee?.lastName}
+          </Typography>
+          
+          <Typography variant="subtitle1" color="text.secondary" gutterBottom sx={{ mb: 3 }}>
+            {employee?.email} • {employee?.role || 'Employee'}
+            {employee?.manager && (
+              <Box component="span" sx={{ display: 'block', mt: 1 }}>
+                Manager: {employee.manager}
+              </Box>
+            )}
+          </Typography>
+          
+          {!employee?.isPrototype && (
+            <Box 
+              sx={{ 
+                mt: 4, 
+                display: 'flex', 
+                gap: 3,
+                alignItems: 'center' 
+              }}
+            >
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={openClockInDialog}
+                disabled={clockedIn || clockStatusLoading}
+                sx={{ 
+                  minWidth: 140,
+                  height: 48,
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  boxShadow: 2
+                }}
+              >
+                {clockStatusLoading ? (
+                  <CircularProgress size={24} sx={{ color: 'white' }} />
+                ) : (
+                  'Clock In'
+                )}
+              </Button>
+              
+              <Button
+                variant={clockedIn ? "contained" : "outlined"}
+                color={clockedIn ? "secondary" : "primary"}
+                onClick={openClockOutDialog}
+                disabled={!clockedIn || clockStatusLoading}
+                sx={{ 
+                  minWidth: 140,
+                  height: 48,
+                  fontSize: '1rem',
+                  fontWeight: 'bold',
+                  boxShadow: clockedIn ? 2 : 0
+                }}
+              >
+                {clockStatusLoading ? (
+                  <CircularProgress size={24} />
+                ) : (
+                  'Clock Out'
+                )}
+              </Button>
+              
+              <Box 
+                sx={{ 
+                  ml: 2, 
+                  display: 'flex', 
+                  alignItems: 'center',
+                  bgcolor: 'background.paper',
+                  py: 1,
+                  px: 3,
+                  borderRadius: 2,
+                  boxShadow: 1
+                }}
+              >
+                <Typography variant="body1" fontWeight="medium">
+                  Status: 
+                </Typography>
+                <Typography 
+                  variant="body1" 
+                  color={clockedIn ? "secondary.main" : "text.secondary"} 
+                  fontWeight="bold"
+                  sx={{ ml: 1 }}
+                >
+                  {clockedIn ? 'ACTIVE' : 'INACTIVE'}
+                </Typography>
+              </Box>
+            </Box>
+          )}
+          
+          {employee?.isPrototype && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              This is a prototype account. Clock In/Out functionality is disabled.
+            </Alert>
+          )}
         </Box>
       </Paper>
-
-      {!(employee?.isPrototype) && (<Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mb: 4 }}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={openClockInDialog}
-          disabled={clockedIn || clockStatusLoading}
-          startIcon={clockStatusLoading ? <CircularProgress size={20} /> : null}
-        >
-          {clockStatusLoading ? 'Processing...' : 'Clock In'}
-        </Button>
-        <Button
-          variant="contained"
-          color="secondary"
-          onClick={openClockOutDialog}
-          disabled={!clockedIn || clockStatusLoading}
-          startIcon={clockStatusLoading ? <CircularProgress size={20} /> : null}
-        >
-          {clockStatusLoading ? 'Processing...' : 'Clock Out'}
-        </Button>
-      </Box>)}
 
       <Dialog open={dialogOpen} onClose={handleDialogClose} PaperProps={{
         sx: {
@@ -266,10 +347,10 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
           borderRadius: '10px'
         }
       }} >
-        <DialogTitle>
+        <DialogTitle sx={{ borderBottom: '1px solid #eee', py: 2 }}>
           {dialogAction === 'clockIn' ? 'Clock In Report' : 'Clock Out Report'}
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ pt: 3 }}>
           <TextField
             autoFocus
             margin="dense"
@@ -283,9 +364,9 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
             onChange={(e) => setReportText(e.target.value)}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose} color="inherit" variant={'outlined'}>Cancel</Button>
-          <Button onClick={handleDialogSave} color="primary" variant={'contained'}>Save</Button>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={handleDialogClose} color="inherit" variant="outlined">Cancel</Button>
+          <Button onClick={handleDialogSave} color="primary" variant="contained">Save</Button>
         </DialogActions>
       </Dialog>
 
@@ -302,7 +383,7 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
                   <TableCell>Date</TableCell>
                   <TableCell>Start Time</TableCell>
                   <TableCell>End Time</TableCell>
-                  <TableCell align="center"></TableCell>
+                  <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -314,22 +395,22 @@ const EmployeeDashboard: React.FC<EmployeeDashboardProps> = ({ user }) => {
                       <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         {record.startTime}
                         {record?.notes?.startTimeNote && (
-                            <Tooltip title={record.notes.startTimeNote} sx={{ ml: 1 }}>
-                              <NoteIcon fontSize="small" color="action" />
-                            </Tooltip>
+                          <Tooltip title={record.notes.startTimeNote} sx={{ ml: 1 }}>
+                            <NoteIcon fontSize="small" color="action" />
+                          </Tooltip>
                         )}
                       </Box>
                     </TableCell>
                     <TableCell>
                       {record.endTime && (
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            {record.endTime}
-                            {record?.notes?.endTimeNote && (
-                                <Tooltip title={record.notes.endTimeNote} sx={{ ml: 1 }}>
-                                  <NoteIcon fontSize="small" color="action" />
-                                </Tooltip>
-                            )}
-                          </Box>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          {record.endTime}
+                          {record?.notes?.endTimeNote && (
+                            <Tooltip title={record.notes.endTimeNote} sx={{ ml: 1 }}>
+                              <NoteIcon fontSize="small" color="action" />
+                            </Tooltip>
+                          )}
+                        </Box>
                       )}
                       {!record.endTime && 'Active'}
                     </TableCell>

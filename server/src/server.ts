@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { users } from './controllers/authController';
 import authRoutes from './routes/authRoutes';
-import timeRecordRoutes from './routes/timeRecordRoutes';
+import employeeRoutes from './routes/employeeRoutes';
 
 const cookieParser = require('cookie-parser');
 
@@ -25,7 +25,7 @@ app.use(cookieParser());
 
 app.locals.users = users;
 app.use('/api/auth', authRoutes);
-app.use('/api/time-records', timeRecordRoutes);
+app.use('/api/employees', employeeRoutes);
 
 app.get('/', (req, res) => {
   res.send('Employee Management API, Welcome!');

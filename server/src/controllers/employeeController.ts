@@ -9,8 +9,7 @@ const getCurrentDate = (): string => {
 };
 
 const getCurrentTime = (): string => {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+  return `${String(new Date().getHours()).padStart(2, '0')}:${String(new Date().getMinutes()).padStart(2, '0')}`;
 };
 
 export const clockIn = async (req: Request, res: Response) => {
@@ -231,6 +230,26 @@ export const checkClockStatus = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error('Check clock status error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getManagers = async (req: Request, res: Response) => {
+  try {
+    // @ts-ignore
+    const users: User[] = req.app.locals.users || [];
+    
+    const managers = users.filter(user => user.isManager);
+    
+    const managersList = managers.map(manager => ({
+      id: manager.id,
+      name: `${manager.firstName} ${manager.lastName}`,
+      email: manager.email
+    }));
+    
+    res.json(managersList);
+  } catch (error) {
+    console.error('Get managers error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 }; 
